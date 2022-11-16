@@ -3,7 +3,7 @@
 
 # dependencies
 import logging
-import numpy as np
+import numpy as np  
 
 # qom modules
 from qom.systems import SOSMSystem
@@ -16,46 +16,52 @@ from qom.ui.plotters import MPLPlotter
 # function to obtain the normalized drift matrix
 def func_A(modes, params, t=None):
     # extract frequently used variables
-    A_l_prime, Delta_0_prime, g_0_prime, gamma_prime, kappa_prime = params
+    A_l_norm, Delta_0_norm, g_0_norm, gamma_norm, kappa_norm = params
     alpha, beta = modes
 
     # effective values
-    Delta_prime = Delta_0_prime + 2 * g_0_prime * np.real(beta)
-    g_prime = g_0_prime * alpha
+    Delta_norm = Delta_0_norm + 2 * g_0_norm * np.real(beta)
+    g_norm = g_0_norm * alpha
 
     # drift matrix
-    A_prime = np.zeros((4, 4), dtype=np.float_)
+    A_norm = np.zeros((4, 4), dtype=np.float_)
     # X quadratures
-    A_prime[0][0] = - kappa_prime / 2
-    A_prime[0][1] = - Delta_prime
-    A_prime[0][2] = - 2 * np.imag(g_prime)
+    A_norm[0][0] = - kappa_norm / 2
+    A_norm[0][1] = - Delta_norm
+    A_norm[0][2] = - 2 * np.imag(g_norm)
     # Y quadratures
-    A_prime[1][0] = Delta_prime
-    A_prime[1][1] = - kappa_prime / 2
-    A_prime[1][2] = 2 * np.real(g_prime)
+    A_norm[1][0] = Delta_norm
+    A_norm[1][1] = - kappa_norm / 2
+    A_norm[1][2] = 2 * np.real(g_norm)
     # Q quadratures
-    A_prime[2][2] = - gamma_prime / 2
-    A_prime[2][3] = 1.0
+    A_norm[2][2] = - gamma_norm / 2
+    A_norm[2][3] = 1.0
     # P quadratures
-    A_prime[3][0] = 2 * np.real(g_prime)
-    A_prime[3][1] = 2 * np.imag(g_prime)
-    A_prime[3][2] = - 1.0
-    A_prime[3][3] = - gamma_prime / 2
+    A_norm[3][0] = 2 * np.real(g_norm)
+    A_norm[3][1] = 2 * np.imag(g_norm)
+    A_norm[3][2] = - 1.0
+    A_norm[3][3] = - gamma_norm / 2
 
-    return A_prime
+    return A_norm
 
 # function to obtain the initial values and constants required for the IVP
 def func_ivc():
     # extract frequently used variables
-    A_l_prime       = 25.0
-    Delta_0_prime   = -1.0
-    g_0_prime       = 0.005
-    gamma_prime     = 0.005
-    kappa_prime     = 0.15
+    A_l_norm       = 25.0
+    Delta_0_norm   = -1.0
+    g_0_norm       = 0.005
+    gamma_norm     = 0.005
+    kappa_norm     = 0.15
     n_th            = 0.0
 
     # initial mode values as 1D list
     modes_0 = np.zeros(2, dtype=np.complex_).tolist()
+    
+    # normalized parameters
+    c_params = [A_l_norm, Delta_0_norm, g_0_norm, gamma_norm, kappa_norm]
+
+    # # uncomment this block to simulate only classical mode amplitudes
+    # return modes_0, c_params
 
     # initial quadrature correlations
     corrs_0 = np.zeros((4, 4), dtype=np.float_)
@@ -68,32 +74,29 @@ def func_ivc():
     iv = modes_0 + [np.complex_(element) for element in corrs_0.flatten()]
 
     # normalized noise correlation matrix
-    D_prime = np.zeros((4, 4), dtype=np.float_)
-    D_prime[0][0] = kappa_prime / 2
-    D_prime[1][1] = kappa_prime / 2
-    D_prime[2][2] = gamma_prime * (2 * n_th + 1) / 2
-    D_prime[3][3] = gamma_prime * (2 * n_th + 1) / 2
-    
-    # normalized parameters
-    params_ivp = [A_l_prime, Delta_0_prime, g_0_prime, gamma_prime, kappa_prime]
+    D_norm = np.zeros((4, 4), dtype=np.float_)
+    D_norm[0][0] = kappa_norm / 2
+    D_norm[1][1] = kappa_norm / 2
+    D_norm[2][2] = gamma_norm * (2 * n_th + 1) / 2
+    D_norm[3][3] = gamma_norm * (2 * n_th + 1) / 2
 
     # all constants
-    c = D_prime.flatten().tolist() + params_ivp
+    c = D_norm.flatten().tolist() + c_params
 
     return iv, c
 
 # function to obtain the rates of the optical and mechanical modes.
 def func_mode_rates(modes, params, t=None):
     # extract frequently used variables
-    A_l_prime, Delta_0_prime, g_0_prime, gamma_prime, kappa_prime = params
+    A_l_norm, Delta_0_norm, g_0_norm, gamma_norm, kappa_norm = params
     alpha, beta = modes
 
     # effective detuning
-    Delta_prime = Delta_0_prime + 2 * g_0_prime * np.real(beta)
+    Delta_norm = Delta_0_norm + 2 * g_0_norm * np.real(beta)
 
     # calculate mode rates
-    dalpha_dt = - kappa_prime / 2 * alpha + 1j * Delta_prime * alpha + A_l_prime
-    dbeta_dt = 1j * g_0_prime * np.conjugate(alpha) * alpha - gamma_prime / 2 * beta - 1j * beta
+    dalpha_dt = - kappa_norm / 2 * alpha + 1j * Delta_norm * alpha + A_l_norm
+    dbeta_dt = 1j * g_0_norm * np.conjugate(alpha) * alpha - gamma_norm / 2 * beta - 1j * beta
     # normalize
     mode_rates = [dalpha_dt, dbeta_dt]
 
@@ -102,12 +105,12 @@ def func_mode_rates(modes, params, t=None):
 # function to obtain the required parameters to calculate the optical steady state
 def func_oss_args(params):
     # extract frequently used variables
-    A_l_prime, Delta_0_prime, g_0_prime, gamma_prime, kappa_prime = params
+    A_l_norm, Delta_0_norm, g_0_norm, gamma_norm, kappa_norm = params
 
     # coefficient of occupancy
-    C_prime = 2 * g_0_prime**2 / (gamma_prime**2 / 4 + 1)
+    C_norm = 2 * g_0_norm**2 / (gamma_norm**2 / 4 + 1)
     
-    return A_l_prime, Delta_0_prime, kappa_prime, C_prime
+    return A_l_norm, Delta_0_norm, kappa_norm, C_norm
 
 ####################################################################################                                SYSTEM                                  ####
 ################################################################################
@@ -164,13 +167,13 @@ plotter = MPLPlotter(axes={
 }, params={
     'type': 'lines',
     'x_label': '$\\omega_{m} t$',
-    'x_ticks': list(range(0, 201, 20)),
+    'x_ticks': list(range(0, 201, 50)),
     'y_colors': ['r', 'r', 'b', 'b'],
     'y_styles': ['-', '--', '-', '--'],
     'y_legend': ['$x$', '$y$', '$q$', '$p$'],
     'v_ticks': list(range(-80, 41, 20)),
     'show_legend': True,
-    'width': 12.0
+    'width': 5.0
 })
 plotter.update(xs=T, vs=[x_d, y_d, q_d, p_d])
 plotter.show(hold=True)
@@ -229,13 +232,13 @@ plotter = MPLPlotter(axes={
 }, params={
     'type': 'lines',
     'x_label': '$\\omega_{m} t$',
-    'x_ticks': list(range(0, 201, 20)),
+    'x_ticks': list(range(0, 201, 50)),
     'y_colors': ['b', 'r'],
     'y_styles': ['-', '--'],
     'y_legend': ['$\\langle Q^{2} \\rangle$', '$\\langle P^{2} \\rangle$'],
-    'v_ticks': [0.0, 0.25, 0.5, 0.75, 1.0],
+    'v_ticks': [0.4, 0.5, 0.6, 0.7],
     'show_legend': True,
-    'width': 12.0
+    'width': 5.0
 })
 plotter.update(xs=T, vs=[Q_2_expect_d, P_2_expect_d])
 plotter.show(hold=True)
@@ -276,11 +279,11 @@ Entan_ln, T = system.get_measure_dynamics(solver_params=solver_params)
 plotter = MPLPlotter(axes={}, params={
     'type': 'lines',
     'x_label': '$\\omega_{m} t$',
-    'x_ticks': list(range(0, 201, 20)),
+    'x_ticks': list(range(0, 201, 50)),
     'y_colors': ['b'],
     'v_label': '$E_{N}$',
     'v_ticks': [0.0, 0.1, 0.2, 0.3, 0.4],
-    'width': 12.0
+    'width': 5.0
 })
 plotter.update(xs=T, vs=np.transpose(Entan_ln)[0])
 plotter.show(hold=True)

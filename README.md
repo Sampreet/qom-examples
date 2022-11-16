@@ -5,3 +5,10 @@
 [![Code Size](https://img.shields.io/github/repo-size/sampreet/qom-examples?style=flat-square)](#)
 
 > A set of notebooks and scripts to demonstrate the usage of the quantum optomechanics toolbox!
+
+## Notebooks
+
+### Systems
+
+* [Dynamics of an End-mirror QOM System using Functional Programming](notebooks/systems/dynamics_functional.ipynb)
+* [Ideal Dynamics of an End-mirror QOM System](notebooks/systems/dynamics_ideal.ipynb)
