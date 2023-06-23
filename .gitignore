@@ -2,7 +2,8 @@
 .vscode/
 
 # data files
-data/*
+cache*/
+temp*/
 
 # Jupyter Notebook Checkpoints
 *.ipynb_checkpoints/
