@@ -4,9 +4,9 @@
 """Class to simulate an optomechanical system with a moveable end-mirror demonstrated in arXiv:2211.02596."""
 
 __authors__ = ['Sampreet Kalita']
-__version__ = '1.0.0'
+__toolbox__ = 'qom-v1.0.0'
 __created__ = '2021-01-01'
-__updated__ = '2023-06-23'
+__updated__ = '2023-06-27'
 
 # dependencies
 import numpy as np
@@ -25,12 +25,12 @@ class EM_00(BaseSystem):
         ============    ====================================================
         key             meaning
         ============    ====================================================
-        A_l_norm        (float) normalized amplitude of the laser :math:`A_{l} / \omega_{m}`. Default is :math:`25.0`.
-        Delta_0_norm    (float) normalized detuning of the laser from the cavity :math:`( \omega_{l} - \omega_{o} ) / \omega_{m}`. Default is :math:`-1.0`.
-        g_0_norm        (float) normalized optomechanical coupling strength :math:`g_{0} / \omega_{m}`. Default is :math:`5 \times 10^{-3}`.
-        gamma_norm      (float) normalized mechanical damping rate :math:`\gamma / \omega_{m}`. Default is :math:`5 \times 10^{-3}`.
-        kappa_norm      (float) normalized optical decay rate :math:`\kappa / \omega_{m}`. Default is :math:`0.15`.
-        T_norm          (float) normalized bath temperature :math:`T / \omega_{m}`. Default is :math:`0.0` K/Hz.
+        A_l_norm        (*float*) normalized amplitude of the laser :math:`A_{l} / \omega_{m}`. Default is :math:`25.0`.
+        Delta_0_norm    (*float*) normalized detuning of the laser from the cavity :math:`( \omega_{l} - \omega_{o} ) / \omega_{m}`. Default is :math:`-1.0`.
+        g_0_norm        (*float*) normalized optomechanical coupling strength :math:`g_{0} / \omega_{m}`. Default is :math:`5 \times 10^{-3}`.
+        gamma_norm      (*float*) normalized mechanical damping rate :math:`\gamma / \omega_{m}`. Default is :math:`5 \times 10^{-3}`.
+        kappa_norm      (*float*) normalized optical decay rate :math:`\kappa / \omega_{m}`. Default is :math:`0.15`.
+        T_norm          (*float*) normalized bath temperature :math:`T / \omega_{m}`. Default is :math:`0.0` K/Hz.
         ============    ====================================================
     cb_update : callable, optional
         Callback function to update status and progress, formatted as ``cb_update(status, progress, reset)``, where ``status`` is a string, ``progress`` is an integer and ``reset`` is a boolean.
@@ -119,7 +119,7 @@ class EM_00(BaseSystem):
         c : numpy.ndarray
             Derived constants and controls.
         t : float
-            Time at which the drift matrix is calculated.
+            Time at which the values are calculated.
         
         Returns
         -------
@@ -153,6 +153,32 @@ class EM_00(BaseSystem):
 
         return self.A
     
+    def get_coeffs_N_o(self, c):
+        """Method to obtain coefficients of the polynomial in mean optical occupancy.
+        
+        Parameters
+        ----------
+        c : numpy.ndarray
+            Derived constants and controls.
+        
+        Returns 
+        -------
+        coeffs : numpy.ndarray
+            Coefficients of the polynomial in mean optical occupancy.
+        """
+
+        # frequently used variables
+        A_l_norm, Delta_0_norm, kappa_norm, C = self.get_params_steady_state(c)
+        
+        # get coefficients
+        coeffs      = np.zeros(2 * self.num_modes, dtype=np.float_)
+        coeffs[0]   = 4.0 * C**2
+        coeffs[1]   = 8.0 * C * Delta_0_norm
+        coeffs[2]   = 4.0 * Delta_0_norm**2 + kappa_norm**2
+        coeffs[3]   = - 4.0 * np.real(np.conjugate(A_l_norm) * A_l_norm)
+
+        return coeffs
+    
     def get_D(self, modes, corrs, c, t):
         """Method to obtain the noise matrix.
         
@@ -162,10 +188,10 @@ class EM_00(BaseSystem):
             Classical modes.
         corrs : numpy.ndarray
             Quantum correlations.
-        params : numpy.ndarray
+        c : numpy.ndarray
             Derived constants and controls.
         t : float
-            Time at which the drift matrix is calculated.
+            Time at which the values are calculated.
         
         Returns
         -------
@@ -210,10 +236,41 @@ class EM_00(BaseSystem):
         iv_corrs[2][2]  = n_th + 0.5
         iv_corrs[3][3]  = n_th + 0.5
 
-        return iv_modes, iv_corrs, np.empty(0)
+        return iv_modes, iv_corrs, np.empty(0)       
+
+    def get_modes_steady_state(self, c):
+        """Method to obtain the steady state modes.
+        
+        Parameters
+        ----------
+        c : numpy.ndarray
+            Derived constants and controls.
+        
+        Returns 
+        -------
+        Modes : numpy.ndarray
+            Steady state modes.
+        """
+
+        # frequently used variables
+        A_l_norm, Delta_0_norm, kappa_norm, C = self.get_params_steady_state(c)
+
+        # get mean optical occupancies
+        N_os = self.get_mean_optical_occupancies()
+
+        # initialize modes
+        Modes = np.zeros((len(N_os), self.num_modes), dtype=np.complex_)
+
+        # for each mean optical occupancy
+        for i in range(len(N_os)):
+            # calculate mode amplitudes
+            Modes[i][0] = A_l_norm / (kappa_norm / 2.0 - 1.0j * (Delta_0_norm + C * N_os[i]))
+            Modes[i][1] = 1.0j * self.params['g_0_norm'] * N_os[i] * (self.params['gamma_norm'] / 2.0 + 1.0j * 1.0) / (self.params['gamma_norm']**2 / 4.0 + 1.0**2)
+
+        return Modes
 
     def get_mode_rates(self, modes, c, t):
-        """Method to obtain the rates of the classical modes.
+        """Method to obtain the rates of change of the modes.
 
         Parameters
         ----------
@@ -222,12 +279,12 @@ class EM_00(BaseSystem):
         c : numpy.ndarray
             Derived constants and controls.
         t : float
-            Time at which the drift matrix is calculated.
+            Time at which the values are calculated.
         
         Returns
         -------
         mode_rates : numpy.ndarray
-            Normalized rates for each mode.
+            Rate of change of the modes.
         """
 
         # extract frequently used variables
@@ -337,38 +394,3 @@ class EM_00(BaseSystem):
         C = 2.0 * self.params['g_0_norm']**2 * 1.0 / (self.params['gamma_norm']**2 / 4.0 + 1.0**2)
         
         return self.params['A_l_norm'], self.params['Delta_0_norm'], self.params['kappa_norm'], C
-
-    def get_modes_steady_state(self, c):
-        """Method to obtain the steady state mode apmlitudes from the mean optical occupancies.
-        
-        Parameters
-        ----------
-        c : numpy.ndarray
-            Derived constants and controls.
-        
-        Returns 
-        -------
-        Modes : numpy.ndarray
-            Optical and mechanical mode amplitudes for each mean optical occupancy.
-        """
-
-        # frequently used variables
-        A_l_norm, Delta_0_norm, kappa_norm, C = self.get_params_steady_state(c)
-
-        # initialize lists
-        Modes = list()
-
-        # get mean optical occupancies
-        N_os, _ = self.get_mean_optical_occupancies(
-            method='cubic'
-        )
-        # for each mean optical occupancy
-        for N_o in N_os:
-            # calculate mode amplitudes
-            alpha   = A_l_norm / (kappa_norm / 2.0 - 1.0j * (Delta_0_norm + C * N_o))
-            beta    = 1.0j * self.params['g_0_norm'] * N_o * (self.params['gamma_norm'] / 2.0 + 1.0j * 1.0) / (self.params['gamma_norm']**2 / 4.0 + 1.0**2)
-
-            # append to list
-            Modes.append([alpha, beta])
-
-        return np.array(Modes, dtype=np.complex_)

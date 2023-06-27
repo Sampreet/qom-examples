@@ -7,7 +7,7 @@ from qom.utils.looper import run_loopers_in_parallel, wrap_looper
 from qom.utils.solver import get_func_stability_zone
 
 # add path to local libraries
-sys.path.append(os.path.abspath(os.path.join('..', 'qom-examples')))
+sys.path.append(os.path.abspath(os.path.join('.')))
 # import system
 from systems.EndMirror import EM_00
 
@@ -18,7 +18,7 @@ use_rhc=False
 params = {
     'looper'    : {
         'show_progress'     : True,
-        'file_path_prefix'  : 'data/em_00/sz_' + ('rhc' if use_rhc else 'eig'),
+        'file_path_prefix'  : 'data/systems/em_00_sz_' + ('rhc' if use_rhc else 'eig'),
         'X' : {
             'var'   : 'Delta_0_norm',
             'min'   : -0.5,
@@ -35,7 +35,7 @@ params = {
     'solver'    : {
         'show_progress'         : False,
         'method'                : 'eig',
-        'system_measure_code'   : 'A'
+        'system_measure_name'   : 'A'
     },
     'system'    : {
         'A_l_norm'      : 5.0,

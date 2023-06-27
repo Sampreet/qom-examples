@@ -8,7 +8,7 @@ from qom.utils.looper import run_loopers_in_parallel, wrap_looper
 from qom.utils.solver import get_func_quantum_correlation_measures, get_func_stability_zone
 
 # add path to local libraries
-sys.path.append(os.path.abspath(os.path.join('..', 'qom-examples')))
+sys.path.append(os.path.abspath(os.path.join('.')))
 # import system
 from systems.EndMirror import EM_00
 
@@ -16,7 +16,7 @@ from systems.EndMirror import EM_00
 params = {
     'looper'    : {
         'show_progress'     : True,
-        'file_path_prefix'  : 'data/em_00/en_sz',
+        'file_path_prefix'  : 'data/systems/em_00_en_sz',
         'X' : {
             'var'   : 'Delta_0_norm',
             'min'   : -1.5,
@@ -35,7 +35,7 @@ params = {
         'method'                : 'eig',
         'measure_codes'         : ['entan_ln'],
         'indices'               : (0, 1),
-        'system_measure_code'   : 'A'
+        'system_measure_name'   : 'A'
     },
     'system'    : {
         'A_l_norm'      : 10.0,
