@@ -1,5 +1,11 @@
 # Changelog
 
+## 2023/07/12 - 00 - Updated Files
+> Toolbox version 1.0.0
+* Updated documentation for `EM_00` system.
+* Updated notebooks and scripts.
+* Updated `README`.
+
 ## 2023/06/27 - 00 - Minor Fixes
 > Toolbox version 1.0.0
 * Updated the repository structure.

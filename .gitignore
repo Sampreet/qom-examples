@@ -4,6 +4,7 @@
 # extra files
 cache*/
 temp*/
+img*/
 
 # Jupyter Notebook Checkpoints
 *.ipynb_checkpoints/
