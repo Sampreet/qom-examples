@@ -1,4 +1,4 @@
-from qom.utils.looper import wrap_looper
+from qom.utils.loopers import wrap_looper
 import numpy as np
 
 # function to obtain the square of the values

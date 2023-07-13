@@ -34,7 +34,7 @@ params = {
         'show_progress': False,
         'method': 'eig',
         'measure_codes': ['entan_ln'],
-        'indices': (0, 1),
+        'indices': [0, 1],
         'system_measure_name': 'A'
     },
     'system': {
