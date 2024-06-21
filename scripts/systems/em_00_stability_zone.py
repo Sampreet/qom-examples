@@ -18,7 +18,7 @@ use_rhc=False
 params = {
     'looper': {
         'show_progress': True,
-        'file_path_prefix': 'data/systems/em_00_sz_' + ('rhc' if use_rhc else 'eig'),
+        # 'file_path_prefix': 'data/systems/em_00_sz_' + ('rhc' if use_rhc else 'eig'),
         'X': {
             'var': 'Delta_0_norm',
             'min': -0.5,
@@ -34,7 +34,7 @@ params = {
     },
     'solver': {
         'show_progress': False,
-        'method': 'eig',
+        'method': 'rhc' if use_rhc else 'eig',
         'system_measure_name': 'A'
     },
     'system': {

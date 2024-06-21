@@ -16,7 +16,7 @@ from systems.EndMirror import EM_00
 params = {
     'looper': {
         'show_progress': True,
-        'file_path_prefix': 'data/systems/em_00_en_sz',
+        # 'file_path_prefix': 'data/systems/em_00_en_sz',
         'X': {
             'var': 'Delta_0_norm',
             'min': -1.5,

@@ -1,6 +1,6 @@
 # Examples for the Quantum Optomechanics Toolbox
 
-[![Toolbox Version](https://img.shields.io/badge/qom-1.0.0-red?style=for-the-badge)](https://sampreet.github.io/qom-docs)
+[![Toolbox Version](https://img.shields.io/badge/qom->1.0.1-red?style=for-the-badge)](https://sampreet.github.io/qom-docs)
 [![Last Commit](https://img.shields.io/github/last-commit/sampreet/qom-examples?style=for-the-badge)](#)
 
 > A set of notebooks and scripts to demonstrate the usage of the quantum optomechanics toolbox!
